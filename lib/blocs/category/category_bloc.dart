@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:drift/drift.dart';
 import 'package:ledger_lite/data/database/app_database.dart';
 
 // --- Events ---

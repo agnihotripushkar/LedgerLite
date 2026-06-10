@@ -60,7 +60,7 @@ class _LockScreenState extends State<LockScreen> {
                 const SizedBox(height: 12),
                 Text(
                   'LedgerLite is protected by biometric lock. Verify your identity to access your financial data.',
-                  textAlign: Center,
+                  textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                     height: 1.5,
@@ -74,7 +74,7 @@ class _LockScreenState extends State<LockScreen> {
                         padding: const EdgeInsets.only(bottom: 24.0),
                         child: Text(
                           state.errorMessage!,
-                          textAlign: Center,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: theme.colorScheme.error,
                             fontSize: 14,

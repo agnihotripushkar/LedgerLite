@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ledger_lite/blocs/transaction/transaction_bloc.dart';
 import 'package:ledger_lite/blocs/category/category_bloc.dart';
 import 'package:ledger_lite/blocs/analytics/analytics_bloc.dart';
@@ -248,7 +249,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.between,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Recent Transactions',
@@ -709,7 +710,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                     filled: true,
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.between,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(DateFormat('MMMM dd, yyyy').format(_selectedDate)),
                       const Icon(Icons.calendar_month),

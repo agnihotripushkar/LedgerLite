@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:ledger_lite/blocs/analytics/analytics_bloc.dart';
-import 'package:ledger_lite/features/dashboard/dashboard_screen.dart'; // for getCategoryIcon
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});

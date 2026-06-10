@@ -149,14 +149,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       trailing: BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
-                          bool isEnabled = false;
-                          if (state is AuthConfigured) {
-                            isEnabled = state.isLockEnabled;
-                          } else {
-                            // Fetch sync status or state check
-                            final isLockEnabled = context.read<AuthBloc>().state is! AuthUnlocked;
-                            // Wait, we can toggle dynamically.
-                          }
                           return FutureBuilder<bool>(
                             future: context.read<AuthBloc>().isLockEnabled(),
                             builder: (context, snapshot) {

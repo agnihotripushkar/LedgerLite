@@ -65,6 +65,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
   TransactionBloc(this._database) : super(TransactionLoading()) {
     on<LoadTransactions>(_onLoadTransactions);
+    on<_UpdateTransactionsList>(_onUpdateTransactionsList);
     on<AddTransaction>(_onAddTransaction);
     on<UpdateTransaction>(_onUpdateTransaction);
     on<DeleteTransaction>(_onDeleteTransaction);
@@ -142,7 +143,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         }
         
         // Convert to CSV
-        String csvData = const ListToCsvConverter().convert(rows);
+        String csvData = Csv().encode(rows);
         
         // Save to file
         final directory = await getApplicationDocumentsDirectory();

@@ -38,10 +38,12 @@ class AuthConfigured extends AuthState {
 
 // --- BLoC ---
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final LocalAuthentication _localAuth;
   static const String _lockEnabledKey = 'biometric_lock_enabled';
 
-  AuthBloc() : super(AuthInitial()) {
+  AuthBloc({LocalAuthentication? localAuth}) 
+      : _localAuth = localAuth ?? LocalAuthentication(),
+        super(AuthInitial()) {
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<AuthenticateUser>(_onAuthenticateUser);
     on<ToggleAppLock>(_onToggleAppLock);
@@ -51,8 +53,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     final isLockEnabled = prefs.getBool(_lockEnabledKey) ?? false;
-    final canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
-    final hasBiometrics = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
 
     if (isLockEnabled) {
       emit(AuthLocked());
@@ -65,10 +65,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final authenticated = await _localAuth.authenticate(
         localizedReason: 'Authenticate to access LedgerLite',
-        options: const AuthenticationOptions(
-          stickyAuth: true,
-          biometricOnly: false, // fallback to pin/passcode
-        ),
+        biometricOnly: false, // fallback to pin/passcode
       );
 
       if (authenticated) {
