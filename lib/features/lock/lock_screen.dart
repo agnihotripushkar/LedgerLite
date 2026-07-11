@@ -39,8 +39,8 @@ class _LockScreenState extends State<LockScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? theme.colorScheme.primaryContainer.withOpacity(0.2)
-                        : theme.colorScheme.primary.withOpacity(0.08),
+                        ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
+                        : theme.colorScheme.primary.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -62,7 +62,7 @@ class _LockScreenState extends State<LockScreen> {
                   'LedgerLite is protected by biometric lock. Verify your identity to access your financial data.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                     height: 1.5,
                   ),
                 ),

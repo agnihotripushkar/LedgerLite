@@ -103,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // Total Balance Header
                     Card(
                       elevation: 0,
-                      color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                         side: BorderSide(color: theme.colorScheme.primaryContainer),
@@ -120,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1.2,
-                                    color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
+                                    color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -148,7 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
@@ -160,7 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.1),
+                                          color: Colors.green.withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(Icons.arrow_downward, color: Colors.green, size: 20),
@@ -191,7 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
@@ -203,7 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.error.withOpacity(0.1),
+                                          color: theme.colorScheme.error.withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(Icons.arrow_upward, color: theme.colorScheme.error, size: 20),
@@ -241,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -318,7 +318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 leading: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Color(cat.colorValue).withOpacity(0.12),
+                                    color: Color(cat.colorValue).withValues(alpha: 0.12),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -358,7 +358,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -525,19 +525,6 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   DateTime _selectedDate = DateTime.now();
 
   @override
-  void initState() {
-    super.initState();
-    // Default select first category of correct type
-    final catState = context.read<CategoryBloc>().state;
-    if (catState is CategoryLoaded && catState.categories.isNotEmpty) {
-      final relevant = catState.categories.where((c) => c.isIncome == (_txType == 'income')).toList();
-      if (relevant.isNotEmpty) {
-        _selectedCategory = relevant.first;
-      }
-    }
-  }
-
-  @override
   void dispose() {
     _amountController.dispose();
     _descController.dispose();
@@ -548,12 +535,9 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     if (type == null) return;
     setState(() {
       _txType = type;
-      // Auto-update default category selector match
-      final catState = context.read<CategoryBloc>().state;
-      if (catState is CategoryLoaded) {
-        final relevant = catState.categories.where((c) => c.isIncome == (_txType == 'income')).toList();
-        _selectedCategory = relevant.isNotEmpty ? relevant.first : null;
-      }
+      // Category re-selection for the new type is handled by the
+      // CategoryBloc BlocBuilder below once it rebuilds.
+      _selectedCategory = null;
     });
   }
 
@@ -621,7 +605,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                       label: const Center(child: Text('Income')),
                       selected: _txType == 'income',
                       onSelected: (selected) => _onTypeChanged('income'),
-                      selectedColor: Colors.green.withOpacity(0.2),
+                      selectedColor: Colors.green.withValues(alpha: 0.2),
                       labelStyle: TextStyle(
                         color: _txType == 'income' ? Colors.green[800] : null,
                         fontWeight: FontWeight.bold,
@@ -658,8 +642,22 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   if (state is CategoryLoaded) {
                     final filteredCats = state.categories.where((c) => c.isIncome == (_txType == 'income')).toList();
 
+                    final selectedIsValid = _selectedCategory != null && filteredCats.contains(_selectedCategory);
+                    final effectiveCategory = selectedIsValid
+                        ? _selectedCategory
+                        : (filteredCats.isNotEmpty ? filteredCats.first : null);
+                    if (effectiveCategory != _selectedCategory) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedCategory = effectiveCategory;
+                          });
+                        }
+                      });
+                    }
+
                     return DropdownButtonFormField<Category>(
-                      value: _selectedCategory,
+                      value: effectiveCategory,
                       decoration: InputDecoration(
                         labelText: 'Category',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),

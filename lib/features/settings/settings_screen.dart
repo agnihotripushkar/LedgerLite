@@ -13,11 +13,17 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _hasBiometrics = false;
+  bool _lockEnabled = false;
+  // True once the user has toggled the switch. Guards against the initial
+  // _loadLockEnabled() read (fired in parallel with the switch being usable)
+  // resolving after a fast toggle and clobbering the optimistic value back.
+  bool _userHasToggledLock = false;
 
   @override
   void initState() {
     super.initState();
     _checkBiometrics();
+    _loadLockEnabled();
   }
 
   Future<void> _checkBiometrics() async {
@@ -25,6 +31,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final hasBio = await auth.hasBiometrics();
     setState(() {
       _hasBiometrics = hasBio;
+    });
+  }
+
+  Future<void> _loadLockEnabled() async {
+    final auth = context.read<AuthBloc>();
+    final isEnabled = await auth.isLockEnabled();
+    if (!mounted || _userHasToggledLock) return;
+    setState(() {
+      _lockEnabled = isEnabled;
     });
   }
 
@@ -132,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -147,30 +162,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ? 'Enable fingerprint or face unlock on launch.'
                             : 'Biometrics unavailable on this device.',
                       ),
-                      trailing: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return FutureBuilder<bool>(
-                            future: context.read<AuthBloc>().isLockEnabled(),
-                            builder: (context, snapshot) {
-                              final currentVal = snapshot.data ?? false;
-                              return Switch(
-                                value: currentVal,
-                                onChanged: _hasBiometrics
-                                    ? (val) {
-                                        context.read<AuthBloc>().add(ToggleAppLock(val));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              val ? 'Biometric Lock Enabled' : 'Biometric Lock Disabled',
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    : null,
-                              );
-                            },
-                          );
-                        },
+                      trailing: Switch(
+                        value: _lockEnabled,
+                        onChanged: _hasBiometrics
+                            ? (val) {
+                                setState(() {
+                                  _userHasToggledLock = true;
+                                  _lockEnabled = val;
+                                });
+                                context.read<AuthBloc>().add(ToggleAppLock(val));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      val ? 'Biometric Lock Enabled' : 'Biometric Lock Disabled',
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
                       ),
                     ),
                   ],
@@ -183,7 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),

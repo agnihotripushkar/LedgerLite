@@ -139,7 +139,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
-                          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                          side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(24.0),
@@ -238,7 +238,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
-                          side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                          side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(24.0),
@@ -424,7 +424,7 @@ class _SummaryStatCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
