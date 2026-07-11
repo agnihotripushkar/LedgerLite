@@ -42,6 +42,19 @@ void main() {
         isA<AuthUnlocked>(),
       ],
     );
+
+    blocTest<AuthBloc, AuthState>(
+      'keeps isLockEnabledSync in sync with CheckAuthStatus and ToggleAppLock',
+      build: () => AuthBloc(localAuth: mockLocalAuth),
+      act: (bloc) async {
+        bloc.add(CheckAuthStatus());
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(ToggleAppLock(true));
+      },
+      verify: (bloc) {
+        expect(bloc.isLockEnabledSync, isTrue);
+      },
+    );
   });
 
   group('TransactionBloc & AnalyticsBloc Tests', () {
