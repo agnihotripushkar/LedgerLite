@@ -14,6 +14,10 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _hasBiometrics = false;
   bool _lockEnabled = false;
+  // True once the user has toggled the switch. Guards against the initial
+  // _loadLockEnabled() read (fired in parallel with the switch being usable)
+  // resolving after a fast toggle and clobbering the optimistic value back.
+  bool _userHasToggledLock = false;
 
   @override
   void initState() {
@@ -33,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadLockEnabled() async {
     final auth = context.read<AuthBloc>();
     final isEnabled = await auth.isLockEnabled();
-    if (!mounted) return;
+    if (!mounted || _userHasToggledLock) return;
     setState(() {
       _lockEnabled = isEnabled;
     });
@@ -163,6 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         onChanged: _hasBiometrics
                             ? (val) {
                                 setState(() {
+                                  _userHasToggledLock = true;
                                   _lockEnabled = val;
                                 });
                                 context.read<AuthBloc>().add(ToggleAppLock(val));
