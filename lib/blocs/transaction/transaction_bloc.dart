@@ -14,7 +14,7 @@ class LoadTransactions extends TransactionEvent {}
 
 class AddTransaction extends TransactionEvent {
   final double amount;
-  final String description;
+  final String? description;
   final DateTime dateTime;
   final int categoryId;
   final String type; // 'income' or 'expense'
@@ -31,11 +31,6 @@ class AddTransaction extends TransactionEvent {
 class UpdateTransaction extends TransactionEvent {
   final Transaction transaction;
   UpdateTransaction(this.transaction);
-}
-
-class DeleteTransaction extends TransactionEvent {
-  final Transaction transaction;
-  DeleteTransaction(this.transaction);
 }
 
 class ExportTransactionsCsv extends TransactionEvent {}
@@ -68,7 +63,6 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<_UpdateTransactionsList>(_onUpdateTransactionsList);
     on<AddTransaction>(_onAddTransaction);
     on<UpdateTransaction>(_onUpdateTransaction);
-    on<DeleteTransaction>(_onDeleteTransaction);
     on<ExportTransactionsCsv>(_onExportTransactionsCsv);
   }
 
@@ -109,14 +103,6 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       await _database.updateTransaction(event.transaction);
     } catch (e) {
       emit(TransactionError('Failed to update transaction: $e'));
-    }
-  }
-
-  Future<void> _onDeleteTransaction(DeleteTransaction event, Emitter<TransactionState> emit) async {
-    try {
-      await _database.deleteTransaction(event.transaction);
-    } catch (e) {
-      emit(TransactionError('Failed to delete transaction: $e'));
     }
   }
 

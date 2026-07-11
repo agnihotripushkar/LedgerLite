@@ -308,9 +308,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: const Icon(Icons.delete, color: Colors.white),
                               ),
                               direction: DismissDirection.endToStart,
-                              confirmDismiss: (direction) => confirmDeleteTransaction(context, txWithCat),
+                              confirmDismiss: (direction) async {
+                                final confirmed = await confirmDeleteTransaction(context, txWithCat);
+                                if (!confirmed || !context.mounted) return false;
+                                try {
+                                  await context.read<AppDatabase>().deleteTransaction(tx);
+                                  return true;
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to delete transaction: $e'),
+                                        backgroundColor: theme.colorScheme.error,
+                                      ),
+                                    );
+                                  }
+                                  return false;
+                                }
+                              },
                               onDismissed: (direction) {
-                                context.read<TransactionBloc>().add(DeleteTransaction(tx));
+                                // Reaching here means confirmDismiss already
+                                // deleted the row successfully, so Undo is safe.
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Transaction deleted'),
@@ -318,7 +336,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       label: 'Undo',
                                       onPressed: () => context.read<TransactionBloc>().add(AddTransaction(
                                             amount: tx.amount,
-                                            description: tx.description ?? '',
+                                            description: tx.description,
                                             dateTime: tx.date,
                                             categoryId: tx.categoryId,
                                             type: tx.type,
