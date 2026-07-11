@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ledger_lite/data/database/app_database.dart';
 import 'package:ledger_lite/blocs/auth/auth_bloc.dart';
@@ -37,14 +38,24 @@ void main() async {
   );
 }
 
-class LedgerLiteApp extends StatelessWidget {
+class LedgerLiteApp extends StatefulWidget {
   const LedgerLiteApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authBloc = context.watch<AuthBloc>();
-    final router = AppRouter.router(authBloc);
+  State<LedgerLiteApp> createState() => _LedgerLiteAppState();
+}
 
+class _LedgerLiteAppState extends State<LedgerLiteApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter.router(context.read<AuthBloc>());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Premium Material 3 Light Theme (Teal Seed)
     final lightTheme = ThemeData(
       useMaterial3: true,
@@ -84,7 +95,7 @@ class LedgerLiteApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.system,
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 }
