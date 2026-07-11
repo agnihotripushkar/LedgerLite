@@ -14,6 +14,8 @@ class Categories extends Table {
   BoolColumn get isIncome => boolean()();
 }
 
+@TableIndex(name: 'idx_transactions_date', columns: {#date})
+@TableIndex(name: 'idx_transactions_category_id', columns: {#categoryId})
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   RealColumn get amount => real()();
@@ -40,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -62,6 +64,12 @@ class AppDatabase extends _$AppDatabase {
             CategoriesCompanion.insert(name: 'Education', icon: 'school', colorValue: 0xFF795548, isIncome: false),
           ]);
         });
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          await m.createIndex(idxTransactionsDate);
+          await m.createIndex(idxTransactionsCategoryId);
+        }
       },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON;');
