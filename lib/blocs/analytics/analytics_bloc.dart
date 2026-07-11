@@ -85,8 +85,16 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     _currentCustomRange = event.customRange;
     emit(AnalyticsLoading());
 
+    // Bound the subscription to the oldest date actually needed, instead of
+    // loading and re-scanning the entire (ever-growing) transaction history
+    // on every single DB write. The 6-month trend chart always needs the
+    // last 6 months regardless of the selected filter, so the cutoff is
+    // whichever is earlier: the filter's own start date or 6 months ago.
+    // 'all' has no lower bound and stays unbounded.
+    final cutoff = _computeSubscriptionCutoff(_currentFilterType, _currentCustomRange, DateTime.now());
+
     _subscription?.cancel();
-    _subscription = _database.watchTransactions().listen(
+    _subscription = _database.watchTransactionsSince(cutoff).listen(
       (transactions) {
         add(_UpdateAnalyticsFromDb(transactions));
       },
@@ -94,6 +102,31 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
         emit(AnalyticsError('Failed to load analytics: $error'));
       },
     );
+  }
+
+  static DateTime? _computeSubscriptionCutoff(
+    String filterType,
+    DateTimeRange? customRange,
+    DateTime now,
+  ) {
+    final sixMonthsAgo = DateTime(now.year, now.month - 5, 1);
+
+    DateTime? filterStart;
+    switch (filterType) {
+      case 'week':
+        filterStart = now.subtract(const Duration(days: 7));
+      case 'month':
+        filterStart = DateTime(now.year, now.month, 1);
+      case 'year':
+        filterStart = DateTime(now.year, 1, 1);
+      case 'custom':
+        filterStart = customRange?.start;
+      default:
+        return null; // 'all' (or unrecognized): no lower bound
+    }
+
+    if (filterStart == null) return null;
+    return filterStart.isBefore(sixMonthsAgo) ? filterStart : sixMonthsAgo;
   }
 
   void _onUpdateAnalyticsFromDb(_UpdateAnalyticsFromDb event, Emitter<AnalyticsState> emit) {
@@ -160,7 +193,9 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     dailySpends.sort((a, b) => a.date.compareTo(b.date));
 
     // 4. Monthly trend (typically bar chart showing last 6 months comparison)
-    // Let's use the unfiltered transactions list for this to show a true history trend
+    // Use the subscription's full window (already bounded to at least the
+    // last 6 months by _computeSubscriptionCutoff) rather than the
+    // date-filtered list, so the trend isn't clipped by the active filter.
     final Map<String, Map<String, double>> monthlyGroups = {}; // "yyyy-MM" -> {"income": X, "expense": Y}
     final monthlyKeyFormat = DateFormat('yyyy-MM');
     

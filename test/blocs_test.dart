@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ledger_lite/data/database/app_database.dart';
 import 'package:ledger_lite/blocs/auth/auth_bloc.dart';
@@ -77,6 +79,42 @@ void main() {
             state.totalBalance == 0 &&
             state.categoryExpenses.isEmpty),
       ],
+    );
+
+    blocTest<AnalyticsBloc, AnalyticsState>(
+      'still includes a 3-month-old transaction in the monthly trend when filter is week',
+      build: () => AnalyticsBloc(database),
+      setUp: () async {
+        final categories = await database.getAllCategories();
+        final salary = categories.firstWhere((c) => c.name == 'Salary');
+        final now = DateTime.now();
+        final threeMonthsAgo = DateTime(now.year, now.month - 3, 15);
+        await database.insertTransaction(TransactionsCompanion.insert(
+          amount: 1000.0,
+          description: const Value('Old income'),
+          date: threeMonthsAgo,
+          categoryId: salary.id,
+          type: 'income',
+        ));
+      },
+      act: (bloc) async {
+        bloc.add(LoadAnalyticsData(filterType: 'week'));
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      },
+      verify: (bloc) {
+        final state = bloc.state;
+        expect(state, isA<AnalyticsLoaded>());
+        final loaded = state as AnalyticsLoaded;
+        // The week filter excludes the transaction from totals...
+        expect(loaded.totalIncome, 0);
+        // ...but the 6-month trend must still see it, since bounding the DB
+        // subscription to the active filter's own start date would have
+        // clipped it out entirely.
+        final now = DateTime.now();
+        final threeMonthsAgoName = DateFormat('MMM').format(DateTime(now.year, now.month - 3, 1));
+        final monthEntry = loaded.monthlySpends.firstWhere((m) => m.monthName == threeMonthsAgoName);
+        expect(monthEntry.income, 1000.0);
+      },
     );
   });
 }
