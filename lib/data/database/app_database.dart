@@ -84,9 +84,18 @@ class AppDatabase extends _$AppDatabase {
 
   // --- Transaction operations ---
   Stream<List<TransactionWithCategory>> watchTransactions() {
+    return watchTransactionsSince(null);
+  }
+
+  /// Watches transactions, optionally bounded to those on or after [since].
+  /// Passing null watches the full (unbounded) history.
+  Stream<List<TransactionWithCategory>> watchTransactionsSince(DateTime? since) {
     final query = select(transactions).join([
       innerJoin(categories, categories.id.equalsExp(transactions.categoryId)),
     ]);
+    if (since != null) {
+      query.where(transactions.date.isBiggerOrEqualValue(since));
+    }
     // Order by date descending
     query.orderBy([OrderingTerm.desc(transactions.date)]);
 
