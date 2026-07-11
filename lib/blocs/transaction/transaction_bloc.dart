@@ -155,6 +155,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       } catch (e) {
         emit(TransactionError('Failed to export CSV: $e'));
       }
+    } else {
+      emit(const TransactionError('Transactions are still loading. Please try exporting again shortly.'));
     }
   }
 

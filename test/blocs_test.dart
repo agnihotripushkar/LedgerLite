@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:drift/native.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ledger_lite/data/database/app_database.dart';
 import 'package:ledger_lite/blocs/auth/auth_bloc.dart';
@@ -11,6 +15,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:local_auth/local_auth.dart';
 
 class MockLocalAuthentication extends Mock implements LocalAuthentication {}
+
+class FakePathProviderPlatform extends PathProviderPlatform
+    with MockPlatformInterfaceMixin {
+  @override
+  Future<String?> getApplicationDocumentsPath() async => Directory.systemTemp.path;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +59,7 @@ void main() {
 
     setUp(() {
       database = AppDatabase.forTesting(NativeDatabase.memory());
+      PathProviderPlatform.instance = FakePathProviderPlatform();
     });
 
     tearDown(() async {
@@ -62,6 +73,31 @@ void main() {
       expect: () => [
         isA<TransactionLoading>(),
         isA<TransactionLoaded>(),
+      ],
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
+      'emits TransactionError when CSV export requested before transactions are loaded',
+      build: () => TransactionBloc(database),
+      act: (bloc) => bloc.add(ExportTransactionsCsv()),
+      expect: () => [
+        isA<TransactionError>(),
+      ],
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
+      'emits TransactionLoaded with csvExportPath when CSV export succeeds',
+      build: () => TransactionBloc(database),
+      act: (bloc) async {
+        bloc.add(LoadTransactions());
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        bloc.add(ExportTransactionsCsv());
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      },
+      expect: () => [
+        isA<TransactionLoading>(),
+        isA<TransactionLoaded>(),
+        predicate<TransactionLoaded>((state) => state.csvExportPath != null),
       ],
     );
 
