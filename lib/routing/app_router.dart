@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ledger_lite/blocs/auth/auth_bloc.dart';
@@ -11,11 +13,28 @@ import 'package:ledger_lite/widgets/adaptive_scaffold.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+/// Notifies GoRouter to re-run `redirect` whenever the given stream emits,
+/// without recreating the GoRouter instance itself.
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 class AppRouter {
   static GoRouter router(AuthBloc authBloc) {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/dashboard',
+      refreshListenable: GoRouterRefreshStream(authBloc.stream),
       redirect: (context, state) async {
         final authState = authBloc.state;
         final isEnabled = await authBloc.isLockEnabled();
