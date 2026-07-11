@@ -132,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -183,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
