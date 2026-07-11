@@ -525,19 +525,6 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   DateTime _selectedDate = DateTime.now();
 
   @override
-  void initState() {
-    super.initState();
-    // Default select first category of correct type
-    final catState = context.read<CategoryBloc>().state;
-    if (catState is CategoryLoaded && catState.categories.isNotEmpty) {
-      final relevant = catState.categories.where((c) => c.isIncome == (_txType == 'income')).toList();
-      if (relevant.isNotEmpty) {
-        _selectedCategory = relevant.first;
-      }
-    }
-  }
-
-  @override
   void dispose() {
     _amountController.dispose();
     _descController.dispose();
@@ -548,12 +535,9 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     if (type == null) return;
     setState(() {
       _txType = type;
-      // Auto-update default category selector match
-      final catState = context.read<CategoryBloc>().state;
-      if (catState is CategoryLoaded) {
-        final relevant = catState.categories.where((c) => c.isIncome == (_txType == 'income')).toList();
-        _selectedCategory = relevant.isNotEmpty ? relevant.first : null;
-      }
+      // Category re-selection for the new type is handled by the
+      // CategoryBloc BlocBuilder below once it rebuilds.
+      _selectedCategory = null;
     });
   }
 
@@ -658,8 +642,22 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   if (state is CategoryLoaded) {
                     final filteredCats = state.categories.where((c) => c.isIncome == (_txType == 'income')).toList();
 
+                    final selectedIsValid = _selectedCategory != null && filteredCats.contains(_selectedCategory);
+                    final effectiveCategory = selectedIsValid
+                        ? _selectedCategory
+                        : (filteredCats.isNotEmpty ? filteredCats.first : null);
+                    if (effectiveCategory != _selectedCategory) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedCategory = effectiveCategory;
+                          });
+                        }
+                      });
+                    }
+
                     return DropdownButtonFormField<Category>(
-                      value: _selectedCategory,
+                      value: effectiveCategory,
                       decoration: InputDecoration(
                         labelText: 'Category',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
