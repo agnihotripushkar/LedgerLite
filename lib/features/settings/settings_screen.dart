@@ -13,11 +13,13 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _hasBiometrics = false;
+  bool _lockEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _checkBiometrics();
+    _loadLockEnabled();
   }
 
   Future<void> _checkBiometrics() async {
@@ -25,6 +27,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final hasBio = await auth.hasBiometrics();
     setState(() {
       _hasBiometrics = hasBio;
+    });
+  }
+
+  Future<void> _loadLockEnabled() async {
+    final auth = context.read<AuthBloc>();
+    final isEnabled = await auth.isLockEnabled();
+    if (!mounted) return;
+    setState(() {
+      _lockEnabled = isEnabled;
     });
   }
 
@@ -147,30 +158,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ? 'Enable fingerprint or face unlock on launch.'
                             : 'Biometrics unavailable on this device.',
                       ),
-                      trailing: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return FutureBuilder<bool>(
-                            future: context.read<AuthBloc>().isLockEnabled(),
-                            builder: (context, snapshot) {
-                              final currentVal = snapshot.data ?? false;
-                              return Switch(
-                                value: currentVal,
-                                onChanged: _hasBiometrics
-                                    ? (val) {
-                                        context.read<AuthBloc>().add(ToggleAppLock(val));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              val ? 'Biometric Lock Enabled' : 'Biometric Lock Disabled',
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    : null,
-                              );
-                            },
-                          );
-                        },
+                      trailing: Switch(
+                        value: _lockEnabled,
+                        onChanged: _hasBiometrics
+                            ? (val) {
+                                setState(() {
+                                  _lockEnabled = val;
+                                });
+                                context.read<AuthBloc>().add(ToggleAppLock(val));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      val ? 'Biometric Lock Enabled' : 'Biometric Lock Disabled',
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null,
                       ),
                     ),
                   ],
