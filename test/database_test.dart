@@ -56,6 +56,18 @@ void main() {
     await expectation;
   });
 
+  test('Transactions table has indices on date and categoryId', () async {
+    final rows = await database
+        .customSelect(
+          "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'transactions'",
+        )
+        .get();
+    final indexNames = rows.map((r) => r.read<String>('name')).toSet();
+
+    expect(indexNames, contains('idx_transactions_date'));
+    expect(indexNames, contains('idx_transactions_category_id'));
+  });
+
   test('Database reset wipes all transactions and maintains default categories', () async {
     final categories = await database.getAllCategories();
     final salaryCategory = categories.firstWhere((c) => c.name == 'Salary');

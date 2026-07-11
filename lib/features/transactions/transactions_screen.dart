@@ -81,7 +81,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                  borderSide: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                 ),
                 filled: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -122,7 +122,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 FilterChip(
                   label: const Text('Income'),
                   selected: _selectedType == 'income',
-                  selectedColor: Colors.green.withOpacity(0.2),
+                  selectedColor: Colors.green.withValues(alpha: 0.2),
                   labelStyle: TextStyle(
                     color: _selectedType == 'income' ? Colors.green[800] : null,
                   ),
@@ -236,7 +236,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               groupHeader.toUpperCase(),
                               style: theme.textTheme.labelMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary.withOpacity(0.8),
+                                color: theme.colorScheme.primary.withValues(alpha: 0.8),
                                 letterSpacing: 0.8,
                               ),
                             ),
@@ -247,7 +247,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                             ),
                             child: ListView.separated(
                               shrinkWrap: true,
@@ -279,7 +279,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                     leading: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: Color(cat.colorValue).withOpacity(0.12),
+                                        color: Color(cat.colorValue).withValues(alpha: 0.12),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(

@@ -14,6 +14,8 @@ class Categories extends Table {
   BoolColumn get isIncome => boolean()();
 }
 
+@TableIndex(name: 'idx_transactions_date', columns: {#date})
+@TableIndex(name: 'idx_transactions_category_id', columns: {#categoryId})
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
   RealColumn get amount => real()();
@@ -40,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -63,6 +65,12 @@ class AppDatabase extends _$AppDatabase {
           ]);
         });
       },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          await m.createIndex(idxTransactionsDate);
+          await m.createIndex(idxTransactionsCategoryId);
+        }
+      },
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON;');
       },
@@ -84,9 +92,18 @@ class AppDatabase extends _$AppDatabase {
 
   // --- Transaction operations ---
   Stream<List<TransactionWithCategory>> watchTransactions() {
+    return watchTransactionsSince(null);
+  }
+
+  /// Watches transactions, optionally bounded to those on or after [since].
+  /// Passing null watches the full (unbounded) history.
+  Stream<List<TransactionWithCategory>> watchTransactionsSince(DateTime? since) {
     final query = select(transactions).join([
       innerJoin(categories, categories.id.equalsExp(transactions.categoryId)),
     ]);
+    if (since != null) {
+      query.where(transactions.date.isBiggerOrEqualValue(since));
+    }
     // Order by date descending
     query.orderBy([OrderingTerm.desc(transactions.date)]);
 

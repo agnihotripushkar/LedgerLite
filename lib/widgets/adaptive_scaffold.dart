@@ -92,7 +92,7 @@ class AdaptiveScaffold extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(
                       right: BorderSide(
-                        color: theme.dividerColor.withOpacity(0.08),
+                        color: theme.dividerColor.withValues(alpha: 0.08),
                         width: 1,
                       ),
                     ),
@@ -119,7 +119,7 @@ class AdaptiveScaffold extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: theme.colorScheme.primary.withOpacity(0.25),
+                                  color: theme.colorScheme.primary.withValues(alpha: 0.25),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
