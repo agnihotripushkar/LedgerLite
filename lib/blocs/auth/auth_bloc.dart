@@ -41,7 +41,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LocalAuthentication _localAuth;
   static const String _lockEnabledKey = 'biometric_lock_enabled';
 
-  AuthBloc({LocalAuthentication? localAuth}) 
+  // Cached in-memory mirror of the SharedPreferences flag, kept in sync by
+  // every handler that reads or writes it, so callers that just need the
+  // current value (like the router's redirect, called on every navigation)
+  // don't have to await a SharedPreferences read each time.
+  bool _cachedIsLockEnabled = false;
+  bool get isLockEnabledSync => _cachedIsLockEnabled;
+
+  AuthBloc({LocalAuthentication? localAuth})
       : _localAuth = localAuth ?? LocalAuthentication(),
         super(AuthInitial()) {
     on<CheckAuthStatus>(_onCheckAuthStatus);
@@ -53,6 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onCheckAuthStatus(CheckAuthStatus event, Emitter<AuthState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     final isLockEnabled = prefs.getBool(_lockEnabledKey) ?? false;
+    _cachedIsLockEnabled = isLockEnabled;
 
     if (isLockEnabled) {
       emit(AuthLocked());
@@ -81,7 +89,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onToggleAppLock(ToggleAppLock event, Emitter<AuthState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_lockEnabledKey, event.enable);
-    
+    _cachedIsLockEnabled = event.enable;
+
     final canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
     final hasBiometrics = canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
     

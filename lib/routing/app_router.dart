@@ -16,10 +16,12 @@ class AppRouter {
     return GoRouter(
       navigatorKey: _rootNavigatorKey,
       initialLocation: '/dashboard',
-      redirect: (context, state) async {
+      redirect: (context, state) {
         final authState = authBloc.state;
-        final isEnabled = await authBloc.isLockEnabled();
-        
+        // Use the bloc's in-memory cache instead of awaiting a fresh
+        // SharedPreferences read on every single navigation.
+        final isEnabled = authBloc.isLockEnabledSync;
+
         final loggingIn = state.matchedLocation == '/lock';
         
         if (isEnabled && authState is AuthLocked && !loggingIn) {
