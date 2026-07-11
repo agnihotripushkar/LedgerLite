@@ -103,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // Total Balance Header
                     Card(
                       elevation: 0,
-                      color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                         side: BorderSide(color: theme.colorScheme.primaryContainer),
@@ -120,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1.2,
-                                    color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
+                                    color: theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -148,7 +148,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
@@ -160,7 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.1),
+                                          color: Colors.green.withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(Icons.arrow_downward, color: Colors.green, size: 20),
@@ -191,7 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+                              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.all(20.0),
@@ -203,7 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.error.withOpacity(0.1),
+                                          color: theme.colorScheme.error.withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(Icons.arrow_upward, color: theme.colorScheme.error, size: 20),
@@ -241,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -318,7 +318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 leading: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Color(cat.colorValue).withOpacity(0.12),
+                                    color: Color(cat.colorValue).withValues(alpha: 0.12),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
@@ -358,7 +358,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: theme.dividerColor.withOpacity(0.08)),
+              side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.08)),
             ),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
@@ -621,7 +621,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                       label: const Center(child: Text('Income')),
                       selected: _txType == 'income',
                       onSelected: (selected) => _onTypeChanged('income'),
-                      selectedColor: Colors.green.withOpacity(0.2),
+                      selectedColor: Colors.green.withValues(alpha: 0.2),
                       labelStyle: TextStyle(
                         color: _txType == 'income' ? Colors.green[800] : null,
                         fontWeight: FontWeight.bold,
