@@ -6,6 +6,7 @@ import 'package:ledger_lite/data/database/app_database.dart';
 import 'package:ledger_lite/blocs/auth/auth_bloc.dart';
 import 'package:ledger_lite/blocs/transaction/transaction_bloc.dart';
 import 'package:ledger_lite/blocs/analytics/analytics_bloc.dart';
+import 'package:ledger_lite/blocs/category/category_bloc.dart';
 
 import 'package:mocktail/mocktail.dart';
 import 'package:local_auth/local_auth.dart';
@@ -76,6 +77,55 @@ void main() {
             state.totalExpense == 0 &&
             state.totalBalance == 0 &&
             state.categoryExpenses.isEmpty),
+      ],
+    );
+  });
+
+  group('CategoryBloc Tests', () {
+    late AppDatabase database;
+
+    setUp(() {
+      database = AppDatabase.forTesting(NativeDatabase.memory());
+    });
+
+    tearDown(() async {
+      await database.close();
+    });
+
+    blocTest<CategoryBloc, CategoryState>(
+      'emits CategoryLoading and CategoryLoaded with the 10 default categories',
+      build: () => CategoryBloc(database),
+      act: (bloc) => bloc.add(LoadCategories()),
+      expect: () => [
+        isA<CategoryLoading>(),
+        predicate<CategoryLoaded>((state) => state.categories.length == 10),
+      ],
+    );
+
+    blocTest<CategoryBloc, CategoryState>(
+      'emits an updated CategoryLoaded after successfully adding a category',
+      build: () => CategoryBloc(database),
+      act: (bloc) async {
+        bloc.add(LoadCategories());
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        bloc.add(AddCategory(name: 'Freelance', icon: 'work', colorValue: 0xFF009688, isIncome: true));
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      },
+      expect: () => [
+        isA<CategoryLoading>(),
+        isA<CategoryLoaded>(),
+        predicate<CategoryLoaded>(
+          (state) => state.categories.length == 11 && state.categories.any((c) => c.name == 'Freelance'),
+        ),
+      ],
+    );
+
+    blocTest<CategoryBloc, CategoryState>(
+      'emits CategoryError when adding a category with a duplicate name',
+      build: () => CategoryBloc(database),
+      act: (bloc) => bloc.add(AddCategory(name: 'Salary', icon: 'payments', colorValue: 0xFF4CAF50, isIncome: true)),
+      expect: () => [
+        isA<CategoryError>(),
       ],
     );
   });
