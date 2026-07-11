@@ -5,6 +5,7 @@ import 'package:ledger_lite/blocs/transaction/transaction_bloc.dart';
 import 'package:ledger_lite/blocs/category/category_bloc.dart';
 import 'package:ledger_lite/data/database/app_database.dart';
 import 'package:ledger_lite/features/dashboard/dashboard_screen.dart'; // import to reuse getCategoryIcon
+import 'package:ledger_lite/widgets/confirm_delete_dialog.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -269,10 +270,23 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                     child: const Icon(Icons.delete, color: Colors.white),
                                   ),
                                   direction: DismissDirection.endToStart,
+                                  confirmDismiss: (direction) => confirmDeleteTransaction(context, txWithCat),
                                   onDismissed: (direction) {
                                     context.read<TransactionBloc>().add(DeleteTransaction(tx));
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Transaction deleted')),
+                                      SnackBar(
+                                        content: const Text('Transaction deleted'),
+                                        action: SnackBarAction(
+                                          label: 'Undo',
+                                          onPressed: () => context.read<TransactionBloc>().add(AddTransaction(
+                                                amount: tx.amount,
+                                                description: tx.description ?? '',
+                                                dateTime: tx.date,
+                                                categoryId: tx.categoryId,
+                                                type: tx.type,
+                                              )),
+                                        ),
+                                      ),
                                     );
                                   },
                                   child: ListTile(
