@@ -7,6 +7,7 @@ import 'package:ledger_lite/blocs/transaction/transaction_bloc.dart';
 import 'package:ledger_lite/blocs/category/category_bloc.dart';
 import 'package:ledger_lite/blocs/analytics/analytics_bloc.dart';
 import 'package:ledger_lite/data/database/app_database.dart';
+import 'package:ledger_lite/widgets/confirm_delete_dialog.dart';
 
 IconData getCategoryIcon(String iconName) {
   switch (iconName) {
@@ -307,10 +308,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: const Icon(Icons.delete, color: Colors.white),
                               ),
                               direction: DismissDirection.endToStart,
+                              confirmDismiss: (direction) async {
+                                final confirmed = await confirmDeleteTransaction(context, txWithCat);
+                                if (!confirmed || !context.mounted) return false;
+                                try {
+                                  await context.read<AppDatabase>().deleteTransaction(tx);
+                                  return true;
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to delete transaction: $e'),
+                                        backgroundColor: theme.colorScheme.error,
+                                      ),
+                                    );
+                                  }
+                                  return false;
+                                }
+                              },
                               onDismissed: (direction) {
-                                context.read<TransactionBloc>().add(DeleteTransaction(tx));
+                                // Reaching here means confirmDismiss already
+                                // deleted the row successfully, so Undo is safe.
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Transaction deleted')),
+                                  SnackBar(
+                                    content: const Text('Transaction deleted'),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      onPressed: () => context.read<TransactionBloc>().add(AddTransaction(
+                                            amount: tx.amount,
+                                            description: tx.description,
+                                            dateTime: tx.date,
+                                            categoryId: tx.categoryId,
+                                            type: tx.type,
+                                          )),
+                                    ),
+                                  ),
                                 );
                               },
                               child: ListTile(
